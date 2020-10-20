@@ -12,6 +12,8 @@ class CalculatorViewModel {
     
     var calculatorService = CalculatorService()
     var currentValueValidator = CurrentValueValidator()
+    var calculatorValidator = CalculatorValidator()
+    
     var numberHaveDot = false
     var currentValue: String = "0" {
         didSet {
@@ -19,12 +21,34 @@ class CalculatorViewModel {
         }
     }
     
-//    private enum mathSigns: Character {
-//        case plus = "+"
-//        case minus = "-"
-//        case multiply = "✕"
-//        case division = "÷"
-//    }
+    private enum AllMathSign: String {
+        
+        case minus = "-"
+        case plus = "+"
+        case multiply = "✕"
+        case division = "÷"
+        case squareRoot = "√"
+        case openBracket = "("
+        case closeBracket = ")"
+    }
+    
+    private enum MathOperationSign: String {
+        
+        case minus = "-"
+        case plus = "+"
+        case multiply = "✕"
+        case division = "÷"
+    }
+    
+    private enum MathSignNoCloseBracket: String {
+        
+        case minus = "-"
+        case plus = "+"
+        case multiply = "✕"
+        case division = "÷"
+        case squareRoot = "√"
+        case openBracket = "("
+    }
     
     weak var displayDelegate: CalculatorDisplayDelegate?
     
@@ -46,19 +70,21 @@ class CalculatorViewModel {
             currentValue = "√"
         } else {
             let lastSimbolInCurrentValue = currentValue[currentValue.index(before: currentValue.endIndex)]
-            if lastSimbolInCurrentValue != "√" && (lastSimbolInCurrentValue == "+" || lastSimbolInCurrentValue == "-" || lastSimbolInCurrentValue == "✕" || lastSimbolInCurrentValue == "÷")/* енаму mathSigns */ {
-                currentValue += "√"}
+            if (MathOperationSign(rawValue: String(lastSimbolInCurrentValue)) != nil) && lastSimbolInCurrentValue != "√"{
+                currentValue += "√"
+            }
         }
-        
     }
     
     func onClickDotButton() { //не знаю, что делать с точкой т.к он дает ее поставить только если больше нет точек, если есть то не дает, а если 2 числа дробных??
         if !numberHaveDot {
             let lastSimbolInCurrentValue = currentValue[currentValue.index(before: currentValue.endIndex)]
-            if lastSimbolInCurrentValue == "√" || lastSimbolInCurrentValue == "÷" || lastSimbolInCurrentValue == "✕" || lastSimbolInCurrentValue == "-" || lastSimbolInCurrentValue == "+" || lastSimbolInCurrentValue == "(" || lastSimbolInCurrentValue == ")"{
+            if AllMathSign(rawValue: String(lastSimbolInCurrentValue)) != nil{
                 currentValue += "0."
+                
             } else if currentValue == "0"{
                 currentValue = "0."
+                
             } else {
                 currentValue += "."
             }
@@ -81,7 +107,7 @@ class CalculatorViewModel {
     
     func onClickPlusButton() {
         let lastSimbolInCurrentValue = currentValue[currentValue.index(before: currentValue.endIndex)]
-        if lastSimbolInCurrentValue != "(" && lastSimbolInCurrentValue != "+" && lastSimbolInCurrentValue != "-" && lastSimbolInCurrentValue != "✕" && lastSimbolInCurrentValue != "÷" && lastSimbolInCurrentValue != "√"/* енаму mathSigns */ {
+        if !(MathSignNoCloseBracket(rawValue: String(lastSimbolInCurrentValue)) != nil) {
             currentValue += "+"}
         numberHaveDot = false
     }
@@ -97,7 +123,7 @@ class CalculatorViewModel {
                 }
                 currentValue += ")"
             }
-            if (lastSimbolInCurrentValue == "+" || lastSimbolInCurrentValue == "-" || lastSimbolInCurrentValue == "✕" || lastSimbolInCurrentValue == "÷" && lastSimbolInCurrentValue != "√") && !currentValue.contains("("){
+            if ((MathOperationSign(rawValue: String(lastSimbolInCurrentValue)) != nil) && lastSimbolInCurrentValue != "√") && !currentValue.contains("("){
                 currentValue += "("
             }
         }
@@ -105,14 +131,14 @@ class CalculatorViewModel {
     
     func onClickMinusButton() {
         let lastSimbolInCurrentValue = currentValue[currentValue.index(before: currentValue.endIndex)]
-        if lastSimbolInCurrentValue != "(" && lastSimbolInCurrentValue != "+" && lastSimbolInCurrentValue != "-" && lastSimbolInCurrentValue != "✕" && lastSimbolInCurrentValue != "÷" && lastSimbolInCurrentValue != "√"/* енаму mathSigns */ {
+        if !(MathSignNoCloseBracket(rawValue: String(lastSimbolInCurrentValue)) != nil) {
             currentValue += "-"}
         numberHaveDot = false
     }
     
     func onClickCalculateButton() {
         let lastSimbolInCurrentValue = currentValue[currentValue.index(before: currentValue.endIndex)]
-        if (lastSimbolInCurrentValue.isNumber || lastSimbolInCurrentValue == ")") && lastSimbolInCurrentValue != "+" && lastSimbolInCurrentValue != "-" && lastSimbolInCurrentValue != "✕" && lastSimbolInCurrentValue != "÷" && lastSimbolInCurrentValue != "√"/* енаму mathSigns */ {
+        if (lastSimbolInCurrentValue.isNumber || lastSimbolInCurrentValue == ")") && !(MathOperationSign(rawValue: String(lastSimbolInCurrentValue)) != nil) && lastSimbolInCurrentValue != "√"{
             
             let verifiedValue = currentValueValidator.validateSignEqual(inputString: currentValue)
             
@@ -123,15 +149,17 @@ class CalculatorViewModel {
     }
     
     func onClickDivisionButton() {
+        let validateValue = calculatorValidator.validateMathSign(inputString: currentValue)
+        
         let lastSimbolInCurrentValue = currentValue[currentValue.index(before: currentValue.endIndex)]
-        if lastSimbolInCurrentValue != "(" && lastSimbolInCurrentValue != "+" && lastSimbolInCurrentValue != "-" && lastSimbolInCurrentValue != "✕" && lastSimbolInCurrentValue != "÷" && lastSimbolInCurrentValue != "√"/* енаму mathSigns */ {
+        if !(MathSignNoCloseBracket(rawValue: String(lastSimbolInCurrentValue)) != nil) {
             currentValue += "÷"}
         numberHaveDot = false
     }
     
     func onClickMultButton() {
         let lastSimbolInCurrentValue = currentValue[currentValue.index(before: currentValue.endIndex)]
-        if lastSimbolInCurrentValue != "(" && lastSimbolInCurrentValue != "+" && lastSimbolInCurrentValue != "-" && lastSimbolInCurrentValue != "✕" && lastSimbolInCurrentValue != "÷" && lastSimbolInCurrentValue != "√"/* енаму mathSigns */ {
+        if !(MathSignNoCloseBracket(rawValue: String(lastSimbolInCurrentValue)) != nil) {
             currentValue += "✕"}
         numberHaveDot = false
     }

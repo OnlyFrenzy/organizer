@@ -16,6 +16,14 @@ enum Sign: String {
     case division = "÷"
     case squareRoot = "√"
     
+    func binary() -> [Sign] {
+        return [.division, .minus, .multiply, .plus]
+    }
+    
+    func prefix() -> [Sign] {
+        return [.squareRoot]
+    }
+    
     func priority() -> Int {
         
         switch self {
