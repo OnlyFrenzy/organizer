@@ -9,62 +9,68 @@ import UIKit
 
 class ViewController: UIViewController {
 
-    @IBOutlet weak var displayLabel: UILabel!
-    var stillTyping = false
+    @IBOutlet weak var displayLabel: UILabel!//почитать про weak
+    
+    var isStillTyping = false
     var firstOperand:Double = 0
     var secondOperand:Double = 0
     var operationSign = ""
-    var dotIsPlased = false
-    var currentInput:Double {
-        get{
-            return Double(displayLabel.text!)!
-        }
-        set{
-            let value = "\(newValue)"
+    var isDotPlased = false
+    var currentInput: Double = 0 {
+        didSet {
+            let value = "\(currentInput)"
             let valueArray = value.components(separatedBy: ".")
-            if valueArray[1] == "0"{
+            if valueArray[1] == "0" {
                 displayLabel.text = "\(valueArray[0])"
             }
-            else{
-                displayLabel.text = "\(newValue)"
+            else {
+                displayLabel.text = "\(currentInput)"
             }
             
-            stillTyping = false
+            isStillTyping = false
         }
     }
     
-    @IBAction func numbersBotton(_ sender: UIButton) {
-        let number = sender.currentTitle!
-        
-        if stillTyping == true {
-        if displayLabel.text!.count < 20 {
-            displayLabel.text = displayLabel.text! + number
+    @IBAction func numbersBotton(_ sender: UIButton) {//почему подчеркивание перед sender
+        guard let number = sender.currentTitle else { return } //форсанврап +
+        if isStillTyping == true {
+            guard let displayLabelTextCount = displayLabel.text?.count,
+                  let displayLabelText = displayLabel.text else { return }
+              
+            if displayLabelTextCount < 20 { //форсанврап x2 ++
+                displayLabel.text = displayLabelText + number
+            }
         }
-        } else {
+        else {
             displayLabel.text = number
-            stillTyping = true
+            isStillTyping = true
         }
         
     }
     
     @IBAction func twoOperandSignButton(_ sender: UIButton) {
-        operationSign = sender.currentTitle!
+        guard let currentTitle = sender.currentTitle else {return}
+        operationSign = currentTitle // форсанврап +
         firstOperand = currentInput
-        stillTyping = false
-        dotIsPlased = false
+        isStillTyping = false
+        isDotPlased = false
     }
     
+    /*func calculateOperateWithTwoOperand(operation: (Double, Double) -> Double) {
+        currentInput = operation(firstOperand, secondOperand)
+        isStillTyping = false
+    }*/
     func operateWithTwoOperand(operation: (Double, Double) -> Double) {
         currentInput = operation(firstOperand, secondOperand)
-        stillTyping = false
+        isStillTyping = false
     }
     
     @IBAction func equallytySignButton(_ sender: UIButton) {
-        if stillTyping == true{
+        if isStillTyping == true{
             secondOperand = currentInput
         }
         
-        dotIsPlased = false
+        isDotPlased = false
         
         switch operationSign {
         case "+":
@@ -77,17 +83,17 @@ class ViewController: UIViewController {
             operateWithTwoOperand{$0 / $1}
         default: break
         }
+            //написать в енаме функцию которая берет 2 дабла и выдает один и через роувэлью реализовать свич между тем, что было передано с кнопки
     }
-    
     
     @IBAction func clearButton(_ sender: UIButton) {
         firstOperand = 0
         secondOperand = 0
         currentInput = 0
         displayLabel.text = "0"
-        stillTyping = false
+        isStillTyping = false
         operationSign = ""
-        dotIsPlased = false
+        isDotPlased = false
     }
     
     @IBAction func plusMinusButton(_ sender: UIButton) {
@@ -95,20 +101,22 @@ class ViewController: UIViewController {
     }
     
     @IBAction func percentButton(_ sender: UIButton) {
-        if firstOperand == 0{
-            currentInput = currentInput / 100
+        let percentsOfNumber = currentInput / 100
+        if firstOperand == 0 {
+            currentInput = percentsOfNumber
         }
         else {
-            secondOperand = firstOperand * currentInput / 100
+            secondOperand = firstOperand * percentsOfNumber
         }
     }
     
     @IBAction func dotButton(_ sender: UIButton) {
-        if stillTyping && !dotIsPlased{
-            displayLabel.text = displayLabel.text! + "."
-            dotIsPlased = true
+        if isStillTyping && !isDotPlased {
+            guard let displayLabelText = displayLabel.text else {return}
+            displayLabel.text = displayLabelText + "."
+            isDotPlased = true
         }
-        else if !stillTyping && !dotIsPlased{
+        else if !isStillTyping && !isDotPlased {
             displayLabel.text = "0."
         }
         
@@ -118,5 +126,4 @@ class ViewController: UIViewController {
         currentInput = sqrt(currentInput)
     }
 }
-
 

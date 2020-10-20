@@ -179,6 +179,7 @@
                                             <color key="titleColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         </state>
                                         <connections>
+                                            <action selector="asd:" destination="BYZ-38-t0r" eventType="touchUpInside" id="2ZQ-DU-cmQ"/>
                                             <action selector="numbersBotton:" destination="BYZ-38-t0r" eventType="touchUpInside" id="eoo-zP-NVN"/>
                                         </connections>
                                     </button>
