@@ -11,43 +11,12 @@ import UIKit
 class CalculatorViewModel {
     
     var calculatorService = CalculatorService()
-    var currentValueValidator = CurrentValueValidator()
     var calculatorValidator = CalculatorValidator()
-    
     var numberHaveDot = false
     var currentValue: String = "0" {
         didSet {
             displayDelegate?.showCurrentValue(value: currentValue)
         }
-    }
-    
-    private enum AllMathSign: String {
-        
-        case minus = "-"
-        case plus = "+"
-        case multiply = "✕"
-        case division = "÷"
-        case squareRoot = "√"
-        case openBracket = "("
-        case closeBracket = ")"
-    }
-    
-    private enum MathOperationSign: String {
-        
-        case minus = "-"
-        case plus = "+"
-        case multiply = "✕"
-        case division = "÷"
-    }
-    
-    private enum MathSignNoCloseBracket: String {
-        
-        case minus = "-"
-        case plus = "+"
-        case multiply = "✕"
-        case division = "÷"
-        case squareRoot = "√"
-        case openBracket = "("
     }
     
     weak var displayDelegate: CalculatorDisplayDelegate?
@@ -57,35 +26,26 @@ class CalculatorViewModel {
     }
     
     func onClickNumberButton(number: Int) {
-        let lastSimbolInCurrentValue = currentValue[currentValue.index(before: currentValue.endIndex)]
-        if currentValue == "0" {
+        let validateNumber = calculatorValidator.validateNumber(inputString: currentValue)
+        if validateNumber == "empty" {
             currentValue = String(number)
-        } else if lastSimbolInCurrentValue != ")" {
+        }
+        if validateNumber == "true" {
             currentValue += String(number)
         }
     }
     
-    func onClickSqrtButton() {
-        if currentValue == "0" {
-            currentValue = "√"
-        } else {
-            let lastSimbolInCurrentValue = currentValue[currentValue.index(before: currentValue.endIndex)]
-            if (MathOperationSign(rawValue: String(lastSimbolInCurrentValue)) != nil) && lastSimbolInCurrentValue != "√"{
-                currentValue += "√"
-            }
-        }
-    }
-    
-    func onClickDotButton() { //не знаю, что делать с точкой т.к он дает ее поставить только если больше нет точек, если есть то не дает, а если 2 числа дробных??
+    func onClickDotButton() {
         if !numberHaveDot {
-            let lastSimbolInCurrentValue = currentValue[currentValue.index(before: currentValue.endIndex)]
-            if AllMathSign(rawValue: String(lastSimbolInCurrentValue)) != nil{
+            let validateDot = calculatorValidator.validateDot(inputString: currentValue)
+            if validateDot == "sign" {
                 currentValue += "0."
                 
-            } else if currentValue == "0"{
+            }
+            if validateDot == "empty" {
                 currentValue = "0."
-                
-            } else {
+            }
+            if validateDot == "number" {
                 currentValue += "."
             }
         }
@@ -105,62 +65,75 @@ class CalculatorViewModel {
         }
     }
     
-    func onClickPlusButton() {
-        let lastSimbolInCurrentValue = currentValue[currentValue.index(before: currentValue.endIndex)]
-        if !(MathSignNoCloseBracket(rawValue: String(lastSimbolInCurrentValue)) != nil) {
-            currentValue += "+"}
-        numberHaveDot = false
-    }
-    
     func onClickBracketsButton() {
-        if currentValue == "0" {
-            currentValue = "("
-        } else {
-            let lastSimbolInCurrentValue = currentValue[currentValue.index(before: currentValue.endIndex)]
-            if  currentValue.contains("(") && !currentValue.contains(")") {
-                if lastSimbolInCurrentValue == "(" {
-                    currentValue += "0"
-                }
+        if !numberHaveDot {
+            let validateBrackets = calculatorValidator.validateBrackets(inputString: currentValue)
+            if validateBrackets == "empty" {
+                currentValue = "("
+            }
+            if validateBrackets == "open" {
+                currentValue += "("
+                
+            }
+            if validateBrackets == "close" {
                 currentValue += ")"
             }
-            if ((MathOperationSign(rawValue: String(lastSimbolInCurrentValue)) != nil) && lastSimbolInCurrentValue != "√") && !currentValue.contains("("){
-                currentValue += "("
-            }
         }
+    }
+    
+    func onClickPlusButton() {
+        let validateBinarySign = calculatorValidator.validateBinarySign(inputString: currentValue)
+        
+        if validateBinarySign { currentValue += "+" }
+        numberHaveDot = false
     }
     
     func onClickMinusButton() {
-        let lastSimbolInCurrentValue = currentValue[currentValue.index(before: currentValue.endIndex)]
-        if !(MathSignNoCloseBracket(rawValue: String(lastSimbolInCurrentValue)) != nil) {
-            currentValue += "-"}
+        let validateBinarySign = calculatorValidator.validateBinarySign(inputString: currentValue)
+        
+        if validateBinarySign { currentValue += "-" }
         numberHaveDot = false
     }
     
-    func onClickCalculateButton() {
-        let lastSimbolInCurrentValue = currentValue[currentValue.index(before: currentValue.endIndex)]
-        if (lastSimbolInCurrentValue.isNumber || lastSimbolInCurrentValue == ")") && !(MathOperationSign(rawValue: String(lastSimbolInCurrentValue)) != nil) && lastSimbolInCurrentValue != "√"{
-            
-            let verifiedValue = currentValueValidator.validateSignEqual(inputString: currentValue)
-            
-            if let result = calculatorService.calculate(inputString: verifiedValue) {
-                currentValue += " = \(result)"
-            }
-        }
-    }
-    
     func onClickDivisionButton() {
-        let validateValue = calculatorValidator.validateMathSign(inputString: currentValue)
+        let validateBinarySign = calculatorValidator.validateBinarySign(inputString: currentValue)
         
-        let lastSimbolInCurrentValue = currentValue[currentValue.index(before: currentValue.endIndex)]
-        if !(MathSignNoCloseBracket(rawValue: String(lastSimbolInCurrentValue)) != nil) {
-            currentValue += "÷"}
+        if validateBinarySign { currentValue += "÷" }
         numberHaveDot = false
     }
     
     func onClickMultButton() {
-        let lastSimbolInCurrentValue = currentValue[currentValue.index(before: currentValue.endIndex)]
-        if !(MathSignNoCloseBracket(rawValue: String(lastSimbolInCurrentValue)) != nil) {
-            currentValue += "✕"}
+        let validateBinarySign = calculatorValidator.validateBinarySign(inputString: currentValue)
+        
+        if validateBinarySign { currentValue += "✕" }
         numberHaveDot = false
+    }
+    
+    func onClickSqrtButton() {
+        let validateSqrt = calculatorValidator.validateSqrt(inputString: currentValue)
+        
+        if validateSqrt == "empty" {
+            currentValue = "√"
+        }
+        if validateSqrt == "true" {
+            currentValue += "√"
+        }
+    }
+    
+    func onClickCalculateButton() {
+        var validateCalculate = calculatorValidator.validateCalculate(inputString: currentValue)
+        while validateCalculate != "true" && validateCalculate != "empty" {
+            currentValue.removeLast()
+            validateCalculate = calculatorValidator.validateCalculate(inputString: currentValue)
+        }
+        if validateCalculate == "empty" {
+            currentValue = "0"
+        }
+        if validateCalculate == "true" {
+            let verifiedValue = calculatorValidator.equalSignYet(inputString: currentValue)
+            if let result = calculatorService.calculate(inputString: verifiedValue) {
+                currentValue = verifiedValue + " = \(result)"
+            }
+        }
     }
 }
